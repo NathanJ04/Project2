@@ -264,7 +264,7 @@ class Ui_Dialog(object):
         self.button_home.setObjectName("button_home")
 
         self.retranslateUi(Dialog)
-        self.stacked_widget.setCurrentIndex(1)
+        self.stacked_widget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
