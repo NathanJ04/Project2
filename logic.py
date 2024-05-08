@@ -3,17 +3,29 @@ from golfgui import *
 import csv
 
 
+def get_to_par(score, course_par):
+    num = int(score - course_par)
+    if num < 0:
+        return num
+    if num > 0:
+        return f'+{num}'
+    if num == 0:
+        return num
+
+
 class Logic(QMainWindow, Ui_Dialog):
-    row_count: int = 0
 
     def __init__(self):
         super().__init__()
         self.setupUi(self)
 
+        #       Screens/Updates
         self.button_home.clicked.connect(lambda: self.home_page())
-        self.button_stats.clicked.connect(lambda: self.stats_data())
         self.button_post_score.clicked.connect(lambda: self.post_page())
         self.button_stats.clicked.connect(lambda: self.stats_page())
+        self.button_stats.clicked.connect(lambda: self.stats_data())
+
+        self.button_post.clicked.connect(lambda: self.post_score())
 
     def home_page(self):
         self.stacked_widget.setCurrentIndex(0)
@@ -26,8 +38,9 @@ class Logic(QMainWindow, Ui_Dialog):
 
     def stats_data(self):
         rows = 0
-        with open('roundhistory.csv', 'r') as csv_file:
+        with open('round_history.csv', 'r', newline="") as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
+            next(csv_reader)
             for line in csv_reader:
                 self.table_stats.removeRow(rows)
                 self.table_stats.insertRow(rows)
@@ -47,10 +60,42 @@ class Logic(QMainWindow, Ui_Dialog):
                 self.table_stats.setItem(rows, 4, item)
                 rows += 1
 
+    def post_score(self):
+        with open('round_history.csv', 'a', newline="") as csv_file:
+            csv_writer = csv.writer(csv_file, delimiter=',')
+            name = str(self.line_edit_course_name.text())
+            score = int(self.get_score())
+            course_par = int(self.line_edit_front.text()) + int(self.line_edit_back.text())
+            to_par = get_to_par(score, course_par)
+            handicap = self.get_handicap()
+            # csv_writer.writerow()
 
+    def get_score(self):
+        h1 = int(self.num_hole_1.value())
+        h2 = int(self.num_hole_2.value())
+        h3 = int(self.num_hole_3.value())
+        h4 = int(self.num_hole_4.value())
+        h5 = int(self.num_hole_5.value())
+        h6 = int(self.num_hole_6.value())
+        h7 = int(self.num_hole_7.value())
+        h8 = int(self.num_hole_8.value())
+        h9 = int(self.num_hole_9.value())
+        h10 = int(self.num_hole_10.value())
+        h11 = int(self.num_hole_11.value())
+        h12 = int(self.num_hole_12.value())
+        h13 = int(self.num_hole_13.value())
+        h14 = int(self.num_hole_14.value())
+        h15 = int(self.num_hole_15.value())
+        h16 = int(self.num_hole_16.value())
+        h17 = int(self.num_hole_17.value())
+        h18 = int(self.num_hole_18.value())
+        return int(h1 + h2 + h3 + h4 + h5 + h6 + h7 + h8 + h9 + h10
+                   + h11 + h12 + h13 + h14 + h15 + h16 + h17 + h18)
 
-    def add_info(self, csv_reader):
-        for line in csv_reader:
-            for value in line:
-                print(value)
-
+    def get_handicap(self):
+        to_par_list = []
+        with open('round_history.csv', 'r', newline="") as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            next(csv_reader)
+            for line in csv_reader:
+                to_par_list.append(line[3])
