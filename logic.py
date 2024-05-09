@@ -22,7 +22,6 @@ class Logic(QMainWindow, Ui_Dialog):
 
 #       Handicap Initiation
         self.get_handicap()
-        self.label_handicap.setText(self.HANDICAP_INDEX)
 #       Screens/Updates
         self.button_home.clicked.connect(lambda: self.home_page())
         self.button_post_score.clicked.connect(lambda: self.post_page())
@@ -34,17 +33,14 @@ class Logic(QMainWindow, Ui_Dialog):
 
     def home_page(self):
         self.get_handicap()
-        self.label_handicap.setText(self.HANDICAP_INDEX)
         self.stacked_widget.setCurrentIndex(0)
 
     def post_page(self):
         self.get_handicap()
-        self.label_handicap.setText(self.HANDICAP_INDEX)
         self.stacked_widget.setCurrentIndex(1)
 
     def stats_page(self):
         self.get_handicap()
-        self.label_handicap.setText(self.HANDICAP_INDEX)
         self.stacked_widget.setCurrentIndex(2)
 
     def stats_data(self):
@@ -82,8 +78,7 @@ class Logic(QMainWindow, Ui_Dialog):
             csv_writer.writerow([name, score, course_par, to_par, handicap])
 
             self.label_total_score.setText(f'TOTAL: {str(score)}')
-            self.get_handicap()
-
+        self.get_handicap()
 
     def get_score(self):
         h1 = int(self.num_hole_1.value())
@@ -127,6 +122,7 @@ class Logic(QMainWindow, Ui_Dialog):
                     self.HANDICAP_INDEX = f'{int(temp_num)}'
             else:
                 self.HANDICAP_INDEX = 'N/A'
+            self.label_handicap.setText(self.HANDICAP_INDEX)
 
     def get_score_stats(self):
         score_list = []
