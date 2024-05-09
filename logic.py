@@ -14,17 +14,17 @@ def get_to_par(score, course_par):
 
 
 class Logic(QMainWindow, Ui_Dialog):
-
+    HANDICAP_INDEX = 'N/A'
     def __init__(self):
         super().__init__()
         self.setupUi(self)
 
-        #       Screens/Updates
+#       Screens/Updates
         self.button_home.clicked.connect(lambda: self.home_page())
         self.button_post_score.clicked.connect(lambda: self.post_page())
         self.button_stats.clicked.connect(lambda: self.stats_page())
         self.button_stats.clicked.connect(lambda: self.stats_data())
-
+#       Posting Scores
         self.button_post.clicked.connect(lambda: self.post_score())
 
     def home_page(self):
@@ -67,7 +67,7 @@ class Logic(QMainWindow, Ui_Dialog):
             score = int(self.get_score())
             course_par = int(self.line_edit_front.text()) + int(self.line_edit_back.text())
             to_par = get_to_par(score, course_par)
-            handicap = self.get_handicap()
+            handicap = f'{self.get_handicap():.1f}'
             # csv_writer.writerow()
 
     def get_score(self):
@@ -94,8 +94,22 @@ class Logic(QMainWindow, Ui_Dialog):
 
     def get_handicap(self):
         to_par_list = []
+
         with open('round_history.csv', 'r', newline="") as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             next(csv_reader)
             for line in csv_reader:
-                to_par_list.append(line[3])
+                to_par_list.append(int(line[3]))
+            try:
+                temp_num = sum(to_par_list) / len(to_par_list)
+            except ZeroDivisionError:
+                pass
+            if len(to_par_list) > 1:
+                if temp_num < 0:
+                    self.HANDICAP_INDEX = f'+{temp_num * (-1):.1f}'
+                if temp_num > 0:
+                    self.HANDICAP_INDEX = f'{temp_num:.1f}'
+                if temp_num == 0:
+                    self.HANDICAP_INDEX = f'{int(temp_num)}'
+            else:
+                self.HANDICAP_INDEX = 'N/A'
