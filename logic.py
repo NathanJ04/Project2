@@ -14,12 +14,15 @@ def get_to_par(score, course_par):
 
 
 class Logic(QMainWindow, Ui_Dialog):
-    HANDICAP_INDEX = 'N/A'
+    HANDICAP_INDEX = "N/A"
 
     def __init__(self):
         super().__init__()
         self.setupUi(self)
 
+#       Handicap Initiation
+        self.get_handicap()
+        self.label_handicap.setText(self.HANDICAP_INDEX)
 #       Screens/Updates
         self.button_home.clicked.connect(lambda: self.home_page())
         self.button_post_score.clicked.connect(lambda: self.post_page())
@@ -29,6 +32,7 @@ class Logic(QMainWindow, Ui_Dialog):
         self.button_post.clicked.connect(lambda: self.post_score())
 
     def home_page(self):
+        self.label_handicap.setText(self.HANDICAP_INDEX)
         self.stacked_widget.setCurrentIndex(0)
 
     def post_page(self):
@@ -74,6 +78,7 @@ class Logic(QMainWindow, Ui_Dialog):
             self.label_total_score.setText(str(score))
             self.get_handicap()
 
+
     def get_score(self):
         h1 = int(self.num_hole_1.value())
         h2 = int(self.num_hole_2.value())
@@ -107,7 +112,7 @@ class Logic(QMainWindow, Ui_Dialog):
                 temp_num = sum(to_par_list) / len(to_par_list)
             except ZeroDivisionError:
                 pass
-            if len(to_par_list) > 1:
+            if len(to_par_list) > 0:
                 if temp_num < 0:
                     self.HANDICAP_INDEX = f'+{temp_num * (-1):.1f}'
                 if temp_num > 0:
