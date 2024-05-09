@@ -15,6 +15,7 @@ def get_to_par(score, course_par):
 
 class Logic(QMainWindow, Ui_Dialog):
     HANDICAP_INDEX = 'N/A'
+
     def __init__(self):
         super().__init__()
         self.setupUi(self)
@@ -67,8 +68,11 @@ class Logic(QMainWindow, Ui_Dialog):
             score = int(self.get_score())
             course_par = int(self.line_edit_front.text()) + int(self.line_edit_back.text())
             to_par = get_to_par(score, course_par)
-            handicap = f'{self.get_handicap():.1f}'
-            # csv_writer.writerow()
+            handicap = self.HANDICAP_INDEX
+            csv_writer.writerow([name, score, course_par, to_par, handicap])
+
+            self.label_total_score.setText(str(score))
+            self.get_handicap()
 
     def get_score(self):
         h1 = int(self.num_hole_1.value())
@@ -94,7 +98,6 @@ class Logic(QMainWindow, Ui_Dialog):
 
     def get_handicap(self):
         to_par_list = []
-
         with open('round_history.csv', 'r', newline="") as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             next(csv_reader)
