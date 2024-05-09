@@ -22,6 +22,9 @@ class Logic(QMainWindow, Ui_Dialog):
 
 #       Handicap Initiation
         self.get_handicap()
+#       Hiding Error Messages
+        self.label_name_error.hide()
+        self.label_numeric_error.hide()
 #       Screens/Updates
         self.button_home.clicked.connect(lambda: self.home_page())
         self.button_post_score.clicked.connect(lambda: self.post_page())
@@ -70,17 +73,39 @@ class Logic(QMainWindow, Ui_Dialog):
                 rows += 1
 
     def post_score(self):
+        self.label_numeric_error.hide()
+        self.label_name_error.hide()
         with open('round_history.csv', 'a', newline="") as csv_file:
             csv_writer = csv.writer(csv_file, delimiter=',')
-            name = str(self.line_edit_course_name.text())
+            name = str(self.line_edit_course_name.text()).strip()
+            val = self.check_name(name)
+            if val:
+                return
             score = int(self.get_score())
-            course_par = int(self.line_edit_front.text()) + int(self.line_edit_back.text())
+            try:
+                if int(self.line_edit_front.text()) < 0 or int(self.line_edit_back.text()) < 0:
+                    raise ValueError
+                else:
+                    print("hi")
+                course_par = int(self.line_edit_front.text()) + int(self.line_edit_back.text())
+            except ValueError:
+                self.label_numeric_error.show()
+                return
             to_par = get_to_par(score, course_par)
             handicap = self.HANDICAP_INDEX
             csv_writer.writerow([name, score, course_par, to_par, handicap])
+            self.label_numeric_error.hide()
 
             self.label_total_score.setText(f'TOTAL: {str(score)}')
         self.get_handicap()
+
+    def check_name(self, name):
+        if name == "":
+            self.label_name_error.show()
+            return True
+        else:
+            self.label_name_error.hide()
+            return False
 
     def get_score(self):
         h1 = int(self.num_hole_1.value())
