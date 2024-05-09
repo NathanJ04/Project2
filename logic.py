@@ -30,6 +30,8 @@ class Logic(QMainWindow, Ui_Dialog):
         self.button_stats.clicked.connect(lambda: self.get_score_stats())
 #       Posting Scores
         self.button_post.clicked.connect(lambda: self.post_score())
+#       Clear Button
+        self.button_clear.clicked.connect(lambda: self.clear())
 
     def home_page(self):
         self.get_handicap()
@@ -146,5 +148,26 @@ class Logic(QMainWindow, Ui_Dialog):
             self.label_num_scores.setText(f'Num of Scores: {num_score}')
             self.label_average_score.setText(f'Average: {average_score}')
 
-
-
+    def clear(self):
+        self.num_hole_1.setValue(0)
+        self.num_hole_2.setValue(0)
+        self.num_hole_3.setValue(0)
+        self.num_hole_4.setValue(0)
+        self.num_hole_5.setValue(0)
+        self.num_hole_6.setValue(0)
+        self.num_hole_7.setValue(0)
+        self.num_hole_8.setValue(0)
+        self.num_hole_9.setValue(0)
+        self.num_hole_10.setValue(0)
+        self.num_hole_11.setValue(0)
+        self.num_hole_12.setValue(0)
+        self.num_hole_13.setValue(0)
+        self.num_hole_14.setValue(0)
+        self.num_hole_15.setValue(0)
+        self.num_hole_16.setValue(0)
+        self.num_hole_17.setValue(0)
+        self.num_hole_18.setValue(0)
+        self.line_edit_front.setText("")
+        self.line_edit_back.setText("")
+        self.line_edit_course_name.setText("")
+        self.label_total_score.setText("TOTAL: N/A")
