@@ -28,17 +28,23 @@ class Logic(QMainWindow, Ui_Dialog):
         self.button_post_score.clicked.connect(lambda: self.post_page())
         self.button_stats.clicked.connect(lambda: self.stats_page())
         self.button_stats.clicked.connect(lambda: self.stats_data())
+        self.button_stats.clicked.connect(lambda: self.get_score_stats())
 #       Posting Scores
         self.button_post.clicked.connect(lambda: self.post_score())
 
     def home_page(self):
+        self.get_handicap()
         self.label_handicap.setText(self.HANDICAP_INDEX)
         self.stacked_widget.setCurrentIndex(0)
 
     def post_page(self):
+        self.get_handicap()
+        self.label_handicap.setText(self.HANDICAP_INDEX)
         self.stacked_widget.setCurrentIndex(1)
 
     def stats_page(self):
+        self.get_handicap()
+        self.label_handicap.setText(self.HANDICAP_INDEX)
         self.stacked_widget.setCurrentIndex(2)
 
     def stats_data(self):
@@ -75,7 +81,7 @@ class Logic(QMainWindow, Ui_Dialog):
             handicap = self.HANDICAP_INDEX
             csv_writer.writerow([name, score, course_par, to_par, handicap])
 
-            self.label_total_score.setText(str(score))
+            self.label_total_score.setText(f'TOTAL: {str(score)}')
             self.get_handicap()
 
 
@@ -112,7 +118,7 @@ class Logic(QMainWindow, Ui_Dialog):
                 temp_num = sum(to_par_list) / len(to_par_list)
             except ZeroDivisionError:
                 pass
-            if len(to_par_list) > 0:
+            if len(to_par_list) > 1:
                 if temp_num < 0:
                     self.HANDICAP_INDEX = f'+{temp_num * (-1):.1f}'
                 if temp_num > 0:
@@ -121,3 +127,28 @@ class Logic(QMainWindow, Ui_Dialog):
                     self.HANDICAP_INDEX = f'{int(temp_num)}'
             else:
                 self.HANDICAP_INDEX = 'N/A'
+
+    def get_score_stats(self):
+        score_list = []
+        with open('round_history.csv', 'r', newline="") as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            next(csv_reader)
+            for line in csv_reader:
+                score_list.append(int(line[1]))
+            try:
+                max_score = int(max(score_list))
+                min_score = int(min(score_list))
+                num_score = int(len(score_list))
+                average_score = f'{sum(score_list) / len(score_list):.1f}'
+            except ValueError:
+                max_score = 'N/A'
+                min_score = 'N/A'
+                num_score = 'N/A'
+                average_score = "N/A"
+            self.label_high_score.setText(f'High: {max_score}')
+            self.label_low_score.setText(f'Low: {min_score}')
+            self.label_num_scores.setText(f'Num of Scores: {num_score}')
+            self.label_average_score.setText(f'Average: {average_score}')
+
+
+
