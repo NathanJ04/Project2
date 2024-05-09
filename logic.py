@@ -15,11 +15,16 @@ def get_to_par(score, course_par):
 
 class Logic(QMainWindow, Ui_Dialog):
     HANDICAP_INDEX = "N/A"
+    ROW_HISTORY = 0
 
     def __init__(self):
         super().__init__()
         self.setupUi(self)
 
+#       Showing Buttons
+        self.button_home.show()
+        self.button_post_score.show()
+        self.button_stats.show()
 #       Handicap Initiation
         self.get_handicap()
 #       Hiding Error Messages
@@ -31,12 +36,25 @@ class Logic(QMainWindow, Ui_Dialog):
         self.button_stats.clicked.connect(lambda: self.stats_page())
         self.button_stats.clicked.connect(lambda: self.stats_data())
         self.button_stats.clicked.connect(lambda: self.get_score_stats())
+        self.button_delete_history.clicked.connect(lambda: self.delete_page())
 #       Posting Scores
         self.button_post.clicked.connect(lambda: self.post_score())
 #       Clear Button
         self.button_clear.clicked.connect(lambda: self.clear())
+#       History Delete Buttons
+        self.button_delete_yes.clicked.connect(lambda: self.delete_yes())
+        self.button_delete_no.clicked.connect(lambda: self.home_page())
+
+    def delete_page(self):
+        self.button_home.hide()
+        self.button_post_score.hide()
+        self.button_stats.hide()
+        self.stacked_widget.setCurrentIndex(3)
 
     def home_page(self):
+        self.button_home.show()
+        self.button_post_score.show()
+        self.button_stats.show()
         self.get_handicap()
         self.stacked_widget.setCurrentIndex(0)
 
@@ -71,6 +89,16 @@ class Logic(QMainWindow, Ui_Dialog):
                 self.table_stats.setItem(rows, 4, item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter))
                 self.table_stats.setItem(rows, 4, item)
                 rows += 1
+            self.ROW_HISTORY = rows
+
+    def delete_yes(self):
+        with open('round_history.csv', 'w', newline="") as csv_file:
+            csv_writer = csv.writer(csv_file, delimiter=',')
+            csv_writer.writerow(["Name", "Score", "Course Par", "To Par", "Handicap"])
+
+        for num in range(0, self.ROW_HISTORY):
+            self.table_stats.removeRow(0)
+        self.home_page()
 
     def post_score(self):
         self.label_numeric_error.hide()
@@ -85,8 +113,6 @@ class Logic(QMainWindow, Ui_Dialog):
             try:
                 if int(self.line_edit_front.text()) < 0 or int(self.line_edit_back.text()) < 0:
                     raise ValueError
-                else:
-                    print("hi")
                 course_par = int(self.line_edit_front.text()) + int(self.line_edit_back.text())
             except ValueError:
                 self.label_numeric_error.show()
