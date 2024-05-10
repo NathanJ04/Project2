@@ -33,27 +33,27 @@ class Logic(QMainWindow, Ui_Dialog):
         super().__init__()
         self.setupUi(self)
 
-#       Showing Buttons
+        #       Showing Buttons
         self.button_home.show()
         self.button_post_score.show()
         self.button_stats.show()
-#       Handicap Initiation
+        #       Handicap Initiation
         self.get_handicap()
-#       Hiding Error Messages
+        #       Hiding Error Messages
         self.label_name_error.hide()
         self.label_numeric_error.hide()
-#       Screens/Updates
+        #       Screens/Updates
         self.button_home.clicked.connect(lambda: self.home_page())
         self.button_post_score.clicked.connect(lambda: self.post_page())
         self.button_stats.clicked.connect(lambda: self.stats_page())
         self.button_stats.clicked.connect(lambda: self.stats_data())
         self.button_stats.clicked.connect(lambda: self.get_score_stats())
         self.button_delete_history.clicked.connect(lambda: self.delete_page())
-#       Posting Scores
+        #       Posting Scores
         self.button_post.clicked.connect(lambda: self.post_score())
-#       Clear Button
+        #       Clear Button
         self.button_clear.clicked.connect(lambda: self.clear())
-#       History Delete Buttons
+        #       History Delete Buttons
         self.button_delete_yes.clicked.connect(lambda: self.delete_yes())
         self.button_delete_no.clicked.connect(lambda: self.home_page())
 
@@ -141,7 +141,9 @@ class Logic(QMainWindow, Ui_Dialog):
             val: bool = self.check_name(name)
             if val:
                 return
-            score: int = int(self.get_score())
+            score: int = int(self.get_score(0))
+            front: int = int(self.get_score(1))
+            back: int = int(self.get_score(2))
             try:
                 if int(self.line_edit_front.text()) < 0 or int(self.line_edit_back.text()) < 0:
                     raise ValueError
@@ -154,6 +156,8 @@ class Logic(QMainWindow, Ui_Dialog):
             csv_writer.writerow([name, score, course_par, to_par, handicap])
             self.label_numeric_error.hide()
 
+            self.label_total_front.setText(f'FRONT: {str(front)}')
+            self.label_total_back.setText(f'BACK: {str(back)}')
             self.label_total_score.setText(f'TOTAL: {str(score)}')
         self.get_handicap()
 
@@ -170,7 +174,7 @@ class Logic(QMainWindow, Ui_Dialog):
             self.label_name_error.hide()
             return False
 
-    def get_score(self) -> int:
+    def get_score(self, x) -> int:
         """
         Function that adds all hole scores and returns total score as an int
         :return: Integer
@@ -193,8 +197,13 @@ class Logic(QMainWindow, Ui_Dialog):
         h16 = int(self.num_hole_16.value())
         h17 = int(self.num_hole_17.value())
         h18 = int(self.num_hole_18.value())
-        return int(h1 + h2 + h3 + h4 + h5 + h6 + h7 + h8 + h9 + h10
-                   + h11 + h12 + h13 + h14 + h15 + h16 + h17 + h18)
+        if x == 0:
+            return int(h1 + h2 + h3 + h4 + h5 + h6 + h7 + h8 + h9 + h10
+                       + h11 + h12 + h13 + h14 + h15 + h16 + h17 + h18)
+        if x == 1:
+            return int(h1 + h2 + h3 + h4 + h5 + h6 + h7 + h8 + h9)
+        if x == 2:
+            return int(h10 + h11 + h12 + h13 + h14 + h15 + h16 + h17 + h18)
 
     def get_handicap(self):
         """
@@ -271,4 +280,6 @@ class Logic(QMainWindow, Ui_Dialog):
         self.line_edit_front.setText("")
         self.line_edit_back.setText("")
         self.line_edit_course_name.setText("")
+        self.label_total_front.setText("FRONT: N/A")
+        self.label_total_back.setText("BACK: N/A")
         self.label_total_score.setText("TOTAL: N/A")
