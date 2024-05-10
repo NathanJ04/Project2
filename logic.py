@@ -4,6 +4,12 @@ import csv
 
 
 def get_to_par(score, course_par):
+    """
+    Function that returns the amount of strokes the person is away from par
+    :param score:
+    :param course_par:
+    :return: Number
+    """
     num = int(score - course_par)
     if num < 0:
         return num
@@ -14,41 +20,81 @@ def get_to_par(score, course_par):
 
 
 class Logic(QMainWindow, Ui_Dialog):
+    """
+    Class that holds all logic for the GUI
+    """
     HANDICAP_INDEX = "N/A"
+    ROW_HISTORY: int = 0
 
     def __init__(self):
+        """
+        Function that initializes the starting values and button functionalities
+        """
         super().__init__()
         self.setupUi(self)
 
-#       Handicap Initiation
+        #       Showing Buttons
+        self.button_home.show()
+        self.button_post_score.show()
+        self.button_stats.show()
+        #       Handicap Initiation
         self.get_handicap()
-        self.label_handicap.setText(self.HANDICAP_INDEX)
-#       Screens/Updates
+        #       Hiding Error Messages
+        self.label_name_error.hide()
+        self.label_numeric_error.hide()
+        #       Screens/Updates
         self.button_home.clicked.connect(lambda: self.home_page())
         self.button_post_score.clicked.connect(lambda: self.post_page())
         self.button_stats.clicked.connect(lambda: self.stats_page())
         self.button_stats.clicked.connect(lambda: self.stats_data())
         self.button_stats.clicked.connect(lambda: self.get_score_stats())
-#       Posting Scores
+        self.button_delete_history.clicked.connect(lambda: self.delete_page())
+        #       Posting Scores
         self.button_post.clicked.connect(lambda: self.post_score())
+        #       Clear Button
+        self.button_clear.clicked.connect(lambda: self.clear())
+        #       History Delete Buttons
+        self.button_delete_yes.clicked.connect(lambda: self.delete_yes())
+        self.button_delete_no.clicked.connect(lambda: self.home_page())
+
+    def delete_page(self):
+        """
+        Changes the screen to the delete page
+        """
+        self.button_home.hide()
+        self.button_post_score.hide()
+        self.button_stats.hide()
+        self.stacked_widget.setCurrentIndex(3)
 
     def home_page(self):
+        """
+        Changes the screen to home page
+        """
+        self.button_home.show()
+        self.button_post_score.show()
+        self.button_stats.show()
         self.get_handicap()
-        self.label_handicap.setText(self.HANDICAP_INDEX)
         self.stacked_widget.setCurrentIndex(0)
 
     def post_page(self):
+        """
+        Changes screen to post page
+        """
         self.get_handicap()
-        self.label_handicap.setText(self.HANDICAP_INDEX)
         self.stacked_widget.setCurrentIndex(1)
 
     def stats_page(self):
+        """
+        Changes screen to stats page
+        """
         self.get_handicap()
-        self.label_handicap.setText(self.HANDICAP_INDEX)
         self.stacked_widget.setCurrentIndex(2)
 
     def stats_data(self):
-        rows = 0
+        """
+        Transfers info from a csv file to the table on the stats page
+        """
+        rows: int = 0
         with open('round_history.csv', 'r', newline="") as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             next(csv_reader)
@@ -70,22 +116,69 @@ class Logic(QMainWindow, Ui_Dialog):
                 self.table_stats.setItem(rows, 4, item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter))
                 self.table_stats.setItem(rows, 4, item)
                 rows += 1
+            self.ROW_HISTORY = rows
+
+    def delete_yes(self):
+        """
+        Function that deletes all info on the csv file and deletes history on the gui's stats table
+        """
+        with open('round_history.csv', 'w', newline="") as csv_file:
+            csv_writer = csv.writer(csv_file, delimiter=',')
+            csv_writer.writerow(["Name", "Score", "Course Par", "To Par", "Handicap"])
+        for num in range(0, self.ROW_HISTORY):
+            self.table_stats.removeRow(0)
+        self.home_page()
 
     def post_score(self):
+        """
+        Function that writes user input onto a csv file and handles exceptions
+        """
+        self.label_numeric_error.hide()
+        self.label_name_error.hide()
         with open('round_history.csv', 'a', newline="") as csv_file:
             csv_writer = csv.writer(csv_file, delimiter=',')
-            name = str(self.line_edit_course_name.text())
-            score = int(self.get_score())
-            course_par = int(self.line_edit_front.text()) + int(self.line_edit_back.text())
+            name: str = str(self.line_edit_course_name.text()).strip()
+            val: bool = self.check_name(name)
+            if val:
+                return
+            score: int = int(self.get_score(0))
+            front: int = int(self.get_score(1))
+            back: int = int(self.get_score(2))
+            try:
+                if int(self.line_edit_front.text()) < 0 or int(self.line_edit_back.text()) < 0:
+                    raise ValueError
+                course_par = int(self.line_edit_front.text()) + int(self.line_edit_back.text())
+            except ValueError:
+                self.label_numeric_error.show()
+                return
             to_par = get_to_par(score, course_par)
             handicap = self.HANDICAP_INDEX
             csv_writer.writerow([name, score, course_par, to_par, handicap])
+            self.label_numeric_error.hide()
 
+            self.label_total_front.setText(f'FRONT: {str(front)}')
+            self.label_total_back.setText(f'BACK: {str(back)}')
             self.label_total_score.setText(f'TOTAL: {str(score)}')
-            self.get_handicap()
+        self.get_handicap()
 
+    def check_name(self, name) -> bool:
+        """
+        function that checks if name is valid then returns True or False
+        :param name:
+        :return: bool
+        """
+        if name == "":
+            self.label_name_error.show()
+            return True
+        else:
+            self.label_name_error.hide()
+            return False
 
-    def get_score(self):
+    def get_score(self, x) -> int:
+        """
+        Function that adds all hole scores and returns total score as an int
+        :return: Integer
+        """
         h1 = int(self.num_hole_1.value())
         h2 = int(self.num_hole_2.value())
         h3 = int(self.num_hole_3.value())
@@ -104,10 +197,18 @@ class Logic(QMainWindow, Ui_Dialog):
         h16 = int(self.num_hole_16.value())
         h17 = int(self.num_hole_17.value())
         h18 = int(self.num_hole_18.value())
-        return int(h1 + h2 + h3 + h4 + h5 + h6 + h7 + h8 + h9 + h10
-                   + h11 + h12 + h13 + h14 + h15 + h16 + h17 + h18)
+        if x == 0:
+            return int(h1 + h2 + h3 + h4 + h5 + h6 + h7 + h8 + h9 + h10
+                       + h11 + h12 + h13 + h14 + h15 + h16 + h17 + h18)
+        if x == 1:
+            return int(h1 + h2 + h3 + h4 + h5 + h6 + h7 + h8 + h9)
+        if x == 2:
+            return int(h10 + h11 + h12 + h13 + h14 + h15 + h16 + h17 + h18)
 
     def get_handicap(self):
+        """
+        Function that updates the handicap
+        """
         to_par_list = []
         with open('round_history.csv', 'r', newline="") as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
@@ -115,7 +216,7 @@ class Logic(QMainWindow, Ui_Dialog):
             for line in csv_reader:
                 to_par_list.append(int(line[3]))
             try:
-                temp_num = sum(to_par_list) / len(to_par_list)
+                temp_num: float = sum(to_par_list) / len(to_par_list)
             except ZeroDivisionError:
                 pass
             if len(to_par_list) > 1:
@@ -127,9 +228,13 @@ class Logic(QMainWindow, Ui_Dialog):
                     self.HANDICAP_INDEX = f'{int(temp_num)}'
             else:
                 self.HANDICAP_INDEX = 'N/A'
+            self.label_handicap.setText(self.HANDICAP_INDEX)
 
     def get_score_stats(self):
-        score_list = []
+        """
+        Function that updates the scoring stats on the stats page
+        """
+        score_list: list[int] = []
         with open('round_history.csv', 'r', newline="") as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             next(csv_reader)
@@ -150,5 +255,31 @@ class Logic(QMainWindow, Ui_Dialog):
             self.label_num_scores.setText(f'Num of Scores: {num_score}')
             self.label_average_score.setText(f'Average: {average_score}')
 
-
-
+    def clear(self):
+        """
+        Function that sets everything on the post page back to its default value
+        """
+        self.num_hole_1.setValue(0)
+        self.num_hole_2.setValue(0)
+        self.num_hole_3.setValue(0)
+        self.num_hole_4.setValue(0)
+        self.num_hole_5.setValue(0)
+        self.num_hole_6.setValue(0)
+        self.num_hole_7.setValue(0)
+        self.num_hole_8.setValue(0)
+        self.num_hole_9.setValue(0)
+        self.num_hole_10.setValue(0)
+        self.num_hole_11.setValue(0)
+        self.num_hole_12.setValue(0)
+        self.num_hole_13.setValue(0)
+        self.num_hole_14.setValue(0)
+        self.num_hole_15.setValue(0)
+        self.num_hole_16.setValue(0)
+        self.num_hole_17.setValue(0)
+        self.num_hole_18.setValue(0)
+        self.line_edit_front.setText("")
+        self.line_edit_back.setText("")
+        self.line_edit_course_name.setText("")
+        self.label_total_front.setText("FRONT: N/A")
+        self.label_total_back.setText("BACK: N/A")
+        self.label_total_score.setText("TOTAL: N/A")
