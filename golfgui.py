@@ -472,7 +472,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowTitle(_translate("Dialog", "HandicapCalculator"))
         self.label_title.setText(_translate("Dialog", "Golf Handicap Calculator"))
         self.label_index.setText(_translate("Dialog", "<html><head/><body><p align=\"center\"><span style=\" font-size:16pt; font-weight:600; font-style:italic;\">Handicap Index</span></p></body></html>"))
         self.label_handicap.setText(_translate("Dialog", "<html><head/><body><p align=\"center\">N/A</p></body></html>"))
